@@ -1,53 +1,78 @@
 import 'package:flutter/material.dart';
-import './questao.dart';
-import './resposta.dart';
+import './questionario.dart';
+import './resultado.dart';
 
 main() => runApp(new QuizApp());
 
 class _QuizAppState extends State<QuizApp> {
   var _perguntaSelecionada = 0;
-  
-  void _responder(){
-    setState(() {
-      _perguntaSelecionada++;
-    });
-  }
- 
-  @override
-  Widget build(BuildContext context) {
-    final List<Map<String, Object>> perguntas = [
+  var _pontuacaoTotal = 0;  
+  final _perguntas = const [
       {
         'texto':'Qual a sua cor favorita?',
-        'respostas': ['Preto','Vermelho','Verde','Branco'],
+        'respostas': [
+          {'texto': 'Preto' , 'pontuacao': 10},
+          {'texto': 'Vermelho', 'pontuacao': 5},
+          {'texto': 'Verde', 'pontuacao': 3},
+          {'texto': 'Branco', 'pontuacao': 1},
+        ],
       },
       {
         'texto':'Qual a seu animal favorito?',
-        'respostas': ['Cachorro','Gato','Hamster','Peixe'],
+        'respostas': [
+          {'texto':'Cachorro', 'pontuacao': 5},
+          {'texto':'Gato', 'pontuacao': 10},
+          {'texto':'Hamster', 'pontuacao': 1},
+          {'texto':'Peixe', 'pontuacao': 3},
+        ],
       },
       {
         'texto':'Qual a seu personagem favotito?',
-        'respostas': ['Mickey','Homer','Pernalonga','Popeye'],
+        'respostas': [
+          {'texto':'Mickey', 'pontuacao': 1},
+          {'texto':'Homer', 'pontuacao': 5},
+          {'texto':'Pernalonga', 'pontuacao': 10},
+          {'texto':'Popeye', 'pontuacao': 3},
+        ],
       }
     ];
-    
-    List<Widget> respostas = [];
-    
-    for(var textoResp in perguntas[_perguntaSelecionada]['respostas']){
-      respostas.add(Resposta(textoResp,_responder));     
-    }
+  
+  void _responder(int pontuacao){
+    if(temPerguntaSelecionada){
+      setState(() {
+        _perguntaSelecionada++;
+        _pontuacaoTotal += pontuacao;
+      });
+    }        
+  }
 
+  void _reiniciarQuestionario() {
+    setState(() {
+      _perguntaSelecionada = 0;
+      _pontuacaoTotal = 0;
+    });
+  }
+
+  bool get temPerguntaSelecionada {
+    return _perguntaSelecionada < _perguntas.length;
+  }  
+
+ 
+  @override
+  Widget build(BuildContext context) {
+    
     return MaterialApp(      
       home: Scaffold(
         appBar: AppBar(
           title: Text('Quiz'),
         ),
-        body: Column(
-          children: <Widget>[
-            Questao(perguntas[_perguntaSelecionada]['texto']),
-            ...respostas,                       
-          ],
-        )
-        ),
+        body: temPerguntaSelecionada 
+          ? Questionario(
+              perguntas: _perguntas,
+              perguntaSelecionada: _perguntaSelecionada,
+              quandoResponder: _responder) 
+          : Resultado(_pontuacaoTotal, _reiniciarQuestionario)
+      ),
     );  
   }
 }
